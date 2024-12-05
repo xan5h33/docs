@@ -1,71 +1,97 @@
 ---
-title: Introduction
-description: 'Welcome to the home of your new documentation'
+title: Өмнөтгөл
+icon: "pen-to-square"
+description: 'Холболт хийхийн өмнө бэлэн болгох зүйлс.'
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.svg"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.svg"
-  alt="Hero Dark"
-/>
+## Cystody талаас:
 
-## Setting up
-
-The first step to world-class documentation is setting up your editing environments.
-
-<CardGroup cols={2}>
+<CardGroup cols={1}>
   <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
+    title="Cystody систем дээр мерчантд зориулсан API key, secret key үүсгэн илгээнэ"
+    icon="key"
+  />
   <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
+    title="Мерчант талын ажиллах серверийн IP хаягуудыг мөн whitelist хийж тохируулна"
+    icon="list"
+  />
+  <Card
+    title="Орлого болон зарлагын амжилттай webhook мэдэгдэл хүлээн авах домайн хаяг (endpoint) ийг тохируулна"
+    icon="bell"
+  />
+  <Card
+    title="Хоёрдогч баталгаажуулалтын webhook хүсэлт хүлээн авах домайн хаяг (endpoint) ийг илгээнэ"
+    icon="2"
+  />
 </CardGroup>
 
-## Make it yours
+### IP Whiltelisting
 
-Update your docs to your brand and add valuable content for the best user conversion.
+API ашиглахад зөвхөн API түлхүүр бүрийн зөвшөөрөгдсөн IP хаягаас дуудан ашиглах боломжтой.
+Та API түлхүүр үүсгэх үедээ сервисийг дуудах back-end серверийн гадаад IP хаягийг whitelist хийх шаардлагатай.
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
-  </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/components/accordion"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
-  </Card>
-</CardGroup>
+## Баталгаажуулалт (Authorization)
+
+| Param     | type                 | Required | Description                                                |
+| --------  | -------------------- | -------- | ---------------------------------------------------------- |
+| api_key   | HEADER - String      | required | Мерчантын давтагдашгүй API key                             |
+| signature | string               | required | Тухайн хүсэлтийн body-г secret key ээр шифрлэсэн signature |
+
+Мерчант болон Cystody API хоорондын харилцаанд аюулгүй байдлын үүднээс баримтлах протокол:
+ - Мерчант заавал Cystody ийн санал болгосон hash хийх алгоритмыг ашиглана.
+ - API key болон sign хийсэн хүсэлтийн эх биеийг header - т оруулна.
+
+### Хүсэлт шифрлэх
+
+```java Signer.java
+public static String signRequestBody(String secret, String requestBody) {
+    try {
+        // Secret string ийг ашиглан SecretKeySpec объект үүсгэнэ
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+        // SHA-256 алгоритм бүхий MAC объектийг хувьсагчид хадгална
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(secretKey);
+        // Cystody API - руу явуулах хүсэлтийг HMAC ашиглан hash хийнэ
+        byte[] hmacBytes = mac.doFinal(requestBody.getBytes());
+        // Byte - уудын цувааг base64 энкодлогдсон string болгож буцаана
+        return Base64.getEncoder().encodeToString(hmacBytes);
+    } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+        throw new RuntimeException("Error while signing request", e);
+    }
+}
+```
+
+### Хэрэглэх жишээ
+
+```java Example.java
+String apiKey = "your-api-key";
+String secret = "your-secret-key";
+String requestBody = "your-request-body";
+String signature = signRequestBody(secret, requestBody);
+HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("cystody-api-url"))
+        .header("X-API-Key", apiKey)
+        .header("X-Signature", signature)
+        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+        .build();
+```
+
+_**Cystody - ийн бэлдэж өгсөн API key болон secret - ийг бусдад түгээж болохгүй!**_
+
+## Wallet холболтын дараалал
+
+1. Хэрэглэгч үүсгэх
+2. Хэрэглэгчийн орлогын хаягийг үүсгэх
+3. Хэрэглэгчийн үлдэгдлийг харах
+4. Хэрэглэгчийн гүйлгээ хийх
+  - Гүйлгээ үүсгэх
+    * Блокчэйн
+    * Дотоод
+  - Блокчэйн гүйлгээ баталгаажуулах (second verification)
+5. Мерчантруу мэдэгдэл илгээх (webhook)
+  - Орлогын мэдэгдэл илгээх
+  - Зарлагын мэдэгдэл илгээх
+
+## Loyalty холболтын дараалал
+1. Бүтээгдэхүүн холбох (manual)
+2. Бүтээгдэхүүний гүйлгээ хийх

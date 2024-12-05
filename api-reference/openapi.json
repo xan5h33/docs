@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "OpenAPI Cystody",
+    "description": "Cystody's OpenAPI specification",
     "license": {
       "name": "MIT"
     },
@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "http://sandbox.cystody.com"
     }
   ],
   "security": [
@@ -19,29 +19,76 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/v1/account": {
+      "post": {
+        "description": "Create a new user in the Cystody system.",
+        "requestBody": {
+          "description": "Details of the user to be added to the system",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Response for creating a user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/address": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "description": "Хэрэглэгчийн сонгосон койн, токений дагуу тухайн хэрэглэгчид шинээр блокчейн хаяг үүсгэх эсвэл үүссэн бол шууд буцаах үйлдлийг хийнэ.",
         "parameters": [
           {
-            "name": "limit",
+            "name": "accountID",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "Unique ID of the user in Cystody.",
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
+            }
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "description": "The blockchain network for which the address is to be created.",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Blockchain address for the selected network",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/Address"
                   }
                 }
               }
@@ -58,15 +105,17 @@
             }
           }
         }
-      },
+      }
+    },
+    "/v1/withdraw": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "description": "Initiate a withdrawal request for the user.",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Details of the withdrawal request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/WithdrawRequest"
               }
             }
           },
@@ -74,17 +123,17 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Response for the withdrawal request",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/WithdrawResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,28 +145,42 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/v1/balance": {
+      "get": {
+        "description": "Retrieve the balance of a user for the selected network.",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
+            "name": "accountID",
+            "in": "query",
+            "description": "Unique ID of the user in Cystody.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
+            }
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "description": "The blockchain network for which the balance is to be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+          "200": {
+            "description": "User's balance on the selected network",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalanceResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
@@ -132,54 +195,146 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Account": {
+        "required": ["uid", "merchantUid", "mobile", "createdAt"],
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
+          "uid": {
+            "description": "Unique ID of the user in Cystody.",
             "type": "string"
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "merchantUid": {
+            "description": "User's ID in the merchant system.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "mobile": {
+            "description": "User's mobile number.",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Timestamp when the user was created.",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Address": {
+        "required": ["address"],
+        "type": "object",
+        "properties": {
+          "address": {
+            "description": "Generated blockchain address.",
             "type": "string"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "CreateAccountRequest": {
+        "required": ["merchantUid", "mobile", "email"],
         "type": "object",
         "properties": {
-          "error": {
+          "merchantUid": {
+            "description": "Merchant системийн хэрэглэгчийн ID.",
+            "type": "string",
+            "format": "uuid"
+          },
+          "mobile": {
+            "description": "Хэрэглэгчийн гар утасны дугаар.",
+            "type": "string"
+          },
+          "email": {
+            "description": "Хэрэглэгчийн цахим хаяг."
+          }
+        }
+      },
+      "CreateAccountResponse": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/Account"
+          }
+        }
+      },
+      "WithdrawRequest": {
+        "required": ["withdraw_type", "from_uid", "symbol", "coin_network", "to_address", "merchant_txn_id", "wallet", "merchantID", "accountID", "amount"],
+        "type": "object",
+        "properties": {
+          "withdraw_type": {
+            "type": "string"
+          },
+          "from_uid": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "coin_network": {
+            "type": "string"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "to_address": {
+            "type": "string"
+          },
+          "merchant_txn_id": {
+            "type": "string"
+          },
+          "wallet": {
+            "type": "string"
+          },
+          "merchantID": {
+            "type": "string"
+          },
+          "accountID": {
+            "description": "Cystody систем дээрх хэрэглэгчийн хаягийн ID.",
+            "type": "string"
+          },
+          "amount": {
+            "description": "Amount to withdraw.",
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "WithdrawResponse": {
+        "type": "object",
+        "properties": {
+          "transferID": {
+            "description": "Гүйлгээний дахин давтагдашгүй ID.",
+            "type": "string"
+          },
+          "merchant_txn_id": {
+            "description": "Merchant систем дээрх гүйлгээний ID.",
+            "type": "string"
+          }
+        }
+      },
+      "BalanceResponse": {
+        "type": "object",
+        "properties": {
+          "balance": {
+            "description": "The user's balance.",
+            "type": "number",
+            "format": "float"
+          },
+          "currency": {
+            "description": "Currency of the balance.",
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "required": ["status", "message"],
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Алдааны статус код.",
             "type": "integer",
             "format": "int32"
           },
           "message": {
+            "description": "Алдааны мэдээлэл.",
             "type": "string"
           }
         }

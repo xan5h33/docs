@@ -15,77 +15,45 @@
       "to": "#07C983"
     }
   },
-  "topbarLinks": [
-    {
-      "name": "Support",
-      "url": "mailto:hi@mintlify.com"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
-  },
   "tabs": [
     {
-      "name": "API Reference",
+      "name": "API жагсаалт",
       "url": "api-reference"
     }
   ],
-  "anchors": [
-    {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
-    },
-    {
-      "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
-    },
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
-    }
-  ],
+
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Эхлэл",
+      "pages": ["introduction"]
+    },
+    {
+      "group": "",
+      "pages": ["api-reference/introduction"]
+    },
+    {
+      "group": "Хэрэглэгч",
       "pages": [
-        "introduction",
-        "quickstart",
-        "development"
+        "api-reference/endpoint/create_account",
+        "api-reference/endpoint/get_address"
       ]
     },
     {
-      "group": "Essentials",
+      "group": "Үлдэгдэл",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "api-reference/endpoint/get_balance"
       ]
     },
     {
-      "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "Endpoint Examples",
-      "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+      "group": "Гүйлгээ",
+      "pages": [    
+        "api-reference/endpoint/create_withdraw"
       ]
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "x": "https://x.com/cystody",
+    "github": "https://github.com/cystody",
+    "linkedin": "https://linkedin.com/company/cystody"
   }
 }
